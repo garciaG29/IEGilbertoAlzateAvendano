@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="py-4">
+    <style>
+        .schedule-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .schedule-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3b82f6;
+            color: #0f172a;
+        }
+
+        .schedule-table thead th {
+            background: #1e3a8a;
+            color: #ffffff;
+            border-color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .schedule-table tbody th {
+            background: #eff6ff;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .schedule-cell {
+            min-height: 80px;
+            padding: 1rem 0.85rem;
+            vertical-align: middle;
+            background: #f8fbf8;
+            color: #0f172a;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            transition: transform 120ms ease, box-shadow 120ms ease;
+            word-wrap: break-word;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .schedule-cell:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        /* Estilos para novedades */
+        .schedule-cell-novedad {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            font-weight: 600;
+        }
+
+        .schedule-cell-no-asiste {
+            background: #fecaca;
+            border: 2px solid #dc2626;
+            color: #7f1d1d;
+        }
+
+        .schedule-cell-suspendida {
+            background: #fed7aa;
+            border: 2px solid #f97316;
+            color: #7c2d12;
+        }
+
+        .schedule-cell-cambio {
+            background: #fef3c7;
+            border: 2px solid #eab308;
+        }
+
+        .schedule-subject {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .schedule-room,
+        .schedule-teacher {
+            display: block;
+            font-size: 0.80rem;
+            color: #475569;
+            line-height: 1.2;
+        }
+
+        .schedule-room {
+            margin-bottom: 0.1rem;
+        }
+
+        .badge-novedad {
+            display: inline-block;
+            background: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .badge-cambio {
+            background: #eab308;
+            color: #7c2d12;
+        }
+
+        .badge-no-asiste {
+            background: #dc2626;
+            color: white;
+        }
+
+        .card-novedad {
+            border-left: 5px solid #ef4444;
+            background: #fef2f2;
+        }
+
+        tr.table-secondary td,
+        tr.table-secondary th {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .form-novedad {
+            background: #f8fbff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #dbeafe;
+            margin-top: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        .btn-crear-novedad {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .btn-crear-novedad:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .novedad-list-item {
+            background: white;
+            border-left: 5px solid #ef4444;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .novedad-type-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .type-cambio_clase { background: #fef3c7; color: #92400e; }
+        .type-cambio_profesor { background: #fed7aa; color: #7c2d12; }
+        .type-cambio_salon { background: #dbeafe; color: #0c4a6e; }
+        .type-no_asiste { background: #fecaca; color: #7f1d1d; }
+        .type-suspendida { background: #fed7aa; color: #92400e; }
+        .type-otra { background: #e5e7eb; color: #374151; }
+    </style>
+
+    <div class="schedule-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">Panel de Novedades de Horarios</h2>
+                <p class="mb-0">Gestiona cambios y novedades en los horarios de los grupos</p>
+            </div>
+            <a href="{% url 'panel_coordinador' %}" class="btn btn-light">Volver al dashboard</a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="row g-2 align-items-end mb-4">
+        <div class="col-md-3">
+            <label class="form-label">Seleccionar grupo</label>
+            <select name="group" class="form-select" onchange="this.form.submit()">
+                {% for group in groups %}
+                <option value="{{ group }}" {% if group == selected_group %}selected{% endif %}>{{ group }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Seleccionar fecha</label>
+            <input type="date" name="date" class="form-control" value="{{ selected_date }}" onchange="this.form.submit()">
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'panel_novedades' %}" class="btn btn-secondary w-100">Hoy</a>
+        </div>
+    </form>
+
+    <!-- SECCIÓN DE HORARIO BASE -->
+    <div class="schedule-section">
+        <h3 class="section-title">📅 Horario Base - Grupo {{ selected_group }}</h3>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-hover align-middle text-center schedule-table">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Horario</th>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% regroup horario_base by get_time_slot as grouped_hours %}
+                    {% for slot in grouped_hours %}
+                    <tr>
+                        <th scope="row" class="text-start">{{ slot.grouper }}</th>
+                        {% for day in dia_choices %}
+                            {% with horarios=slot.list|dictsort:"dia" %}
+                                {% with horario=horarios|get_item:day.0 %}
+                                    <td class="schedule-cell{% if horario %} schedule-cell-filled{% endif %}">
+                                        {% if horario %}
+                                            <div class="schedule-info">
+                                                <span class="schedule-subject">{{ horario.materia.nombre }}</span>
+                                                <span class="schedule-teacher">{{ horario.profesor.usuario.first_name }} {{ horario.profesor.usuario.last_name }}</span>
+                                                <span class="schedule-room">{{ horario.salon }}</span>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE NOVEDADES -->
+    <div class="schedule-section">
+        <h3 class="section-title">🔴 Novedades del {{ fecha_selected|date:"d/m/Y" }}</h3>
+        
+        {% if novedades %}
+            <div class="alert alert-warning" role="alert">
+                <strong>⚠️ Hay {{ novedades|length }} novedad(es) registrada(s) para esta fecha.</strong>
+            </div>
+
+            <div class="row">
+                {% for novedad in novedades %}
+                <div class="col-md-6 mb-3">
+                    <div class="card card-novedad">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="novedad-type-badge type-{{ novedad.tipo_novedad }}">
+                                    {{ novedad.get_tipo_novedad_display }}
+                                </span>
+                                <form method="post" action="{% url 'eliminar_novedad' novedad.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Desactivar esta novedad?')">Desactivar</button>
+                                </form>
+                            </div>
+
+                            <p class="mb-2"><strong>Hora:</strong> {{ novedad.hora_inicio|time:"H:i" }} - {{ novedad.hora_fin|time:"H:i" }} | <strong>Día:</strong> {{ novedad.get_dia_display }}</p>
+
+                            {% if novedad.tipo_novedad == 'no_asiste' %}
+                                <div class="alert alert-danger py-2 mb-2">
+                                    <strong>🚫 GRUPO NO ASISTE</strong><br>
+                                    Clase: {{ novedad.materia_original.nombre }}<br>
+                                    Profesor: {{ novedad.profesor_original.usuario.first_name }}
+                                </div>
+                            {% elif novedad.tipo_novedad == 'suspendida' %}
+                                <div class="alert alert-warning py-2 mb-2">
+                                    <strong>⛔ CLASE SUSPENDIDA</strong><br>
+                                    Clase: {{ novedad.materia_original.nombre }}<br>
+                                    Profesor: {{ novedad.profesor_original.usuario.first_name }}
+                                </div>
+                            {% else %}
+                                <div class="mb-2">
+                                    <strong>Clase Original:</strong><br>
+                                    📚 {{ novedad.materia_original.nombre }}<br>
+                                    👨‍🏫 {{ novedad.profesor_original.usuario.first_name }} {{ novedad.profesor_original.usuario.last_name }}<br>
+                                    🏛️ {{ novedad.salon_original }}
+                                </div>
+
+                                {% if novedad.materia_nueva or novedad.profesor_nuevo or novedad.salon_nuevo %}
+                                    <div class="alert alert-info py-2 mb-0">
+                                        <strong>✏️ Cambios:</strong><br>
+                                        {% if novedad.materia_nueva %}
+                                            📚 Nueva materia: <strong>{{ novedad.materia_nueva.nombre }}</strong><br>
+                                        {% endif %}
+                                        {% if novedad.profesor_nuevo %}
+                                            👨‍🏫 Nuevo profesor: <strong>{{ novedad.profesor_nuevo.usuario.first_name }} {{ novedad.profesor_nuevo.usuario.last_name }}</strong><br>
+                                        {% endif %}
+                                        {% if novedad.salon_nuevo %}
+                                            🏛️ Nuevo salón: <strong>{{ novedad.salon_nuevo }}</strong><br>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if novedad.observacion %}
+                                <div class="mt-2 p-2 bg-light rounded">
+                                    <strong>Observación:</strong><br>
+                                    <small>{{ novedad.observacion }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                ✅ No hay novedades registradas para esta fecha en este grupo.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- SECCIÓN PARA CREAR NOVEDAD -->
+    <div class="schedule-section">
+        <h3 class="section-title">➕ Registrar Nueva Novedad</h3>
+        
+        <div class="form-novedad">
+            <form method="post" action="{% url 'crear_novedad' %}" id="form-novedad">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="fecha">Fecha</label>
+                            <input type="date" name="fecha" id="fecha" class="form-control" value="{{ selected_date }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="grupo">Grupo</label>
+                            <select name="grupo" id="grupo" class="form-select" required>
+                                {% for group in groups %}
+                                <option value="{{ group }}" {% if group == selected_group %}selected{% endif %}>{{ group }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="dia">Día</label>
+                            <select name="dia" id="dia" class="form-select" required>
+                                {% for key, label in dia_choices %}
+                                <option value="{{ key }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="tipo_novedad">Tipo de Novedad</label>
+                            <select name="tipo_novedad" id="tipo_novedad" class="form-select" required onchange="actualizarFormulario()">
+                                <option value="">-- Seleccionar --</option>
+                                {% for key, label in tipo_novedad_choices %}
+                                <option value="{{ key }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="hora_inicio">Hora Inicio</label>
+                            <input type="time" name="hora_inicio" id="hora_inicio" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="hora_fin">Hora Fin</label>
+                            <input type="time" name="hora_fin" id="hora_fin" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="materia_original">Materia Original</label>
+                            <select name="materia_original" id="materia_original" class="form-select">
+                                <option value="">-- No especificado --</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="profesor_original">Profesor Original</label>
+                            <select name="profesor_original" id="profesor_original" class="form-select">
+                                <option value="">-- No especificado --</option>
+                                {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}">{{ teacher.display_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="cambios-section" style="display:none;">
+                    <div class="form-section-title">Cambios Aplicables</div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label class="form-label" for="materia_nueva">Nueva Materia</label>
+                                <select name="materia_nueva" id="materia_nueva" class="form-select">
+                                    <option value="">-- Sin cambio --</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label class="form-label" for="profesor_nuevo">Nuevo Profesor</label>
+                                <select name="profesor_nuevo" id="profesor_nuevo" class="form-select">
+                                    <option value="">-- Sin cambio --</option>
+                                    {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}">{{ teacher.display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label class="form-label" for="salon_nuevo">Nuevo Salón</label>
+                                <input type="text" name="salon_nuevo" id="salon_nuevo" class="form-control" placeholder="Ej. Aula 15">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label" for="observacion">Observación</label>
+                    <textarea name="observacion" id="observacion" class="form-control" rows="3" placeholder="Detalles adicionales sobre la novedad..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-crear-novedad">
+                        <i class="bi bi-plus-circle"></i> Registrar Novedad
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary">Limpiar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function actualizarFormulario() {
+        const tipoNovedad = document.getElementById('tipo_novedad').value;
+        const cambiosSection = document.getElementById('cambios-section');
+        const materiaOriginal = document.getElementById('materia_original');
+        const profesorOriginal = document.getElementById('profesor_original');
+        
+        if (tipoNovedad === 'no_asiste' || tipoNovedad === 'suspendida') {
+            cambiosSection.style.display = 'none';
+            materiaOriginal.required = true;
+            profesorOriginal.required = true;
+        } else if (tipoNovedad === '') {
+            cambiosSection.style.display = 'none';
+            materiaOriginal.required = false;
+            profesorOriginal.required = false;
+        } else {
+            cambiosSection.style.display = 'block';
+            materiaOriginal.required = true;
+            profesorOriginal.required = true;
+        }
+    }
+
+    // Inicializar en carga
+    document.addEventListener('DOMContentLoaded', actualizarFormulario);
+</script>
+{% endblock %}

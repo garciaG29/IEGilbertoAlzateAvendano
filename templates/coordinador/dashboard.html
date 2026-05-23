@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Dashboard Coordinador</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+
+        h1{
+            color: #333;
+        }
+
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td{
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th{
+            background: #1e88e5;
+            color: white;
+        }
+
+        tr:nth-child(even){
+            background: #f9f9f9;
+        }
+
+        .logout{
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: red;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Panel Coordinador</h1>
+
+    <a href="{% url 'logout' %}" class="logout">
+        Cerrar Sesión
+    </a>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Grupo</th>
+
+                <th>Día</th>
+
+                <th>Hora Inicio</th>
+
+                <th>Hora Fin</th>
+
+                <th>Materia</th>
+
+                <th>Profesor</th>
+
+                <th>Salón</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for horario in horarios %}
+
+            <tr>
+
+                <td>{{ horario.grupo }}</td>
+
+                <td>{{ horario.dia }}</td>
+
+                <td>{{ horario.hora_inicio }}</td>
+
+                <td>{{ horario.hora_fin }}</td>
+
+                <td>{{ horario.materia.nombre }}</td>
+
+                <td>{{ horario.profesor.usuario.username }}</td>
+
+                <td>{{ horario.salon }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>

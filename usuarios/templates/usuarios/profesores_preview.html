@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Vista previa: Profesores y materias (archivo)</h2>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Profesor</th>
+      <th>Materias</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for profesor, materias in items %}
+      <tr>
+        <td>{{ profesor }}</td>
+        <td>
+          {% for m in materias %}
+            <span class="badge bg-secondary me-1">{{ m }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="2">No se encontraron datos en data/profesores_materias.txt</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,524 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="py-4 schedule-page-shell">
+    <style>
+
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+
+        --text-soft: #d9e4ff;
+
+        --accent: #99B0F0;
+        --accent-strong: #C1CFF6;
+
+        --success-soft: rgba(16, 185, 129, 0.15);
+        --danger-soft: rgba(248, 113, 113, 0.15);
+
+        --panel-dark: rgba(9, 23, 61, 0.95);
+        --cell-dark: rgba(255,255,255,0.05);
+    }
+
+    .schedule-page-shell{
+        min-height:calc(100vh - 120px);
+        position:relative;
+    }
+
+    .schedule-page-shell > *{
+        position:relative;
+        z-index:1;
+    }
+
+    .schedule-hero,
+    .schedule-panel,
+    .schedule-form-card{
+        background:var(--glass-bg);
+        backdrop-filter:blur(14px);
+        border:1px solid var(--glass-border);
+        border-radius:24px;
+        box-shadow:var(--glass-shadow);
+    }
+
+    .schedule-hero{
+        padding:1.5rem;
+        margin-bottom:1.5rem;
+    }
+
+    .schedule-hero h2{
+        color:white;
+        font-weight:700;
+    }
+
+    .schedule-hero p{
+        color:var(--text-soft);
+    }
+
+    .schedule-panel{
+        padding:1.5rem;
+        margin-bottom:1.5rem;
+    }
+
+    /* =========================
+       TABLA
+    ========================= */
+
+    .schedule-table{
+        width:100%;
+        border-collapse:separate;
+        border-spacing:0;
+        overflow:hidden;
+        border-radius:20px;
+        background:transparent;
+    }
+
+    .schedule-table thead th {
+        background: linear-gradient(
+            135deg,
+            rgba(8, 15, 35, 0.96),
+            rgba(18, 32, 72, 0.96)
+        );
+
+        color: #EAF1FF;
+
+        border: 1px solid rgba(255,255,255,0.06);
+
+        font-weight: 700;
+
+        letter-spacing: 0.4px;
+
+        box-shadow:
+            inset 0 -1px 0 rgba(255,255,255,0.04),
+            0 4px 12px rgba(0,0,0,0.18);
+    }
+
+    .schedule-table tbody th{
+        background:rgba(255,255,255,0.08) !important;
+        color:white !important;
+        border:1px solid rgba(255,255,255,0.08) !important;
+        font-weight:600;
+        padding:16px;
+    }
+
+    .schedule-cell{
+        background:var(--cell-dark) !important;
+        color:white !important;
+
+        border:1px solid rgba(255,255,255,0.08) !important;
+
+        min-height:100px;
+        padding:16px;
+
+        vertical-align:middle;
+
+        transition:0.2s ease;
+        cursor:pointer;
+    }
+
+    .schedule-cell:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+        background: rgba(16, 185, 129, 0.14);
+        border-color: rgba(52, 211, 153, 0.35);
+        cursor: pointer;
+    }
+
+    .schedule-cell-filled{
+        background:var(--success-soft) !important;
+    }
+
+    .schedule-cell.table-active {
+        background: linear-gradient(
+            135deg,
+            rgba(28, 189, 135, 0.77),
+            rgba(28, 189, 135, 0.77)
+        ) !important;
+
+        border: 1px solid rgba(74, 222, 128, 0.55);
+
+        box-shadow:
+            0 10px 25px rgba(16, 185, 129, 0.22),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+
+        color: white;
+    }
+
+    .schedule-info{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+    }
+
+    .schedule-subject{
+        color:white;
+        font-weight:700;
+        font-size:15px;
+        text-transform:uppercase;
+    }
+
+    .schedule-teacher,
+    .schedule-room{
+        color:#dbe7ff;
+        font-size:13px;
+    }
+
+    tr.table-secondary td,
+    tr.table-secondary th{
+        background:rgba(255,255,255,0.06) !important;
+        color:white !important;
+    }
+
+    /* =========================
+       FORMULARIOS
+    ========================= */
+
+    .schedule-form-card{
+        padding:1.5rem;
+    }
+
+    .schedule-form-card h5{
+        color:white;
+        font-weight:700;
+    }
+
+    .form-label{
+        color:var(--accent-strong) !important;
+        font-weight:600;
+    }
+
+    /* INPUTS */
+
+    .form-control,
+    .form-select{
+        background:rgba(255,255,255,0.08) !important;
+
+        border:1px solid rgba(255,255,255,0.12) !important;
+
+        color:white !important;
+
+        border-radius:14px !important;
+
+        padding:12px 14px;
+    }
+
+    .form-control:focus,
+    .form-select:focus{
+        background:rgba(255,255,255,0.12) !important;
+
+        color:white !important;
+
+        border-color:var(--accent) !important;
+
+        box-shadow:0 0 0 0.2rem rgba(153,176,240,0.2) !important;
+    }
+
+    .form-control::placeholder{
+        color:rgba(255,255,255,0.6) !important;
+    }
+
+    /* SELECT OPTIONS */
+
+    .form-select option{
+        background:#10204a;
+        color:white;
+    }
+
+    /* INPUT DISABLED */
+
+    .form-control:disabled{
+        background:rgba(255,255,255,0.06) !important;
+        color:#dbe7ff !important;
+        opacity:1 !important;
+    }
+
+    /* =========================
+       BOTONES
+    ========================= */
+
+    .btn-primary{
+        background:linear-gradient(
+            135deg,
+            var(--accent),
+            var(--accent-strong)
+        ) !important;
+
+        border:none !important;
+
+        color:#09173D !important;
+
+        font-weight:700;
+
+        border-radius:12px;
+
+        padding:12px 18px;
+    }
+
+    .btn-primary:hover{
+        transform:translateY(-1px);
+        box-shadow:0 8px 20px rgba(153,176,240,0.28);
+    }
+
+    .btn-secondary{
+        background:rgba(255,255,255,0.10) !important;
+
+        border:1px solid rgba(255,255,255,0.12) !important;
+
+        color:white !important;
+
+        border-radius:12px;
+    }
+
+    .btn-secondary:hover{
+        background:rgba(255,255,255,0.16) !important;
+    }
+
+    .btn-outline-danger{
+        border-color:rgba(248,113,113,0.65) !important;
+        color:#ffdede !important;
+        border-radius:12px;
+    }
+
+    .btn-outline-danger:hover{
+        background:var(--danger-soft) !important;
+        color:white !important;
+    }
+
+    /* =========================
+       TEXTOS MUTED
+    ========================= */
+
+    .text-muted{
+        color:#c9d8ff !important;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media(max-width:768px){
+
+        .schedule-hero{
+            padding:1.2rem;
+        }
+
+        .schedule-table{
+            min-width:900px;
+        }
+
+    }
+
+</style>
+
+    <section class="schedule-hero">
+        <div class="d-flex flex-column flex-md-row align-items-start justify-content-between gap-3">
+            <div>
+                <h2 class="mb-1">Editor de Horario</h2>
+                <p class="text-muted mb-0">Grupo: <strong>{{ selected_group }}</strong></p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'panel_coordinador' %}" class="btn btn-secondary">Volver al dashboard</a>
+                <a href="{% url 'panel_horarios' %}?group={{ selected_group }}" class="btn btn-primary">Refrescar</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="schedule-panel mb-4">
+        <form method="get" class="row g-2 align-items-center mb-0">
+            <div class="col-auto">
+                <label class="form-label mb-0">Seleccionar grupo</label>
+                <select name="group" class="form-select" onchange="this.form.submit()">
+                    {% for group in groups %}
+                    <option value="{{ group }}" {% if group == selected_group %}selected{% endif %}>{{ group }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </section>
+
+    <section class="table-responsive mb-4">
+        <table class="table table-bordered table-hover align-middle text-center schedule-table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Horario</th>
+                    {% for _, day_name in day_values %}
+                    <th>{{ day_name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in schedule_rows %}
+                    {% if row.break %}
+                    <tr class="table-secondary">
+                        <th scope="row">{{ row.slot.label }}</th>
+                        <td colspan="{{ day_values|length }}">Receso</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <th scope="row" class="text-start">{{ row.slot.label }}</th>
+                        {% for cell_item in row.cells %}
+                            {% with cell=cell_item.cell %}
+                            <td class="schedule-cell{% if cell %} schedule-cell-filled{% endif %}"
+                                data-day="{{ cell_item.day_key }}"
+                                data-slot="{{ cell_item.slot_label }}"
+                                data-subject="{% if cell %}{{ cell.subject }}{% endif %}"
+                                data-subject-id="{% if cell %}{{ cell.materia_id }}{% endif %}"
+                                data-teacher="{% if cell %}{{ cell.teacher }}{% endif %}"
+                                data-teacher-id="{% if cell %}{{ cell.profesor_id }}{% endif %}"
+                                data-room="{% if cell %}{{ cell.room }}{% endif %}">
+                                {% if cell %}
+                                    <div class="schedule-info">
+                                        <span class="schedule-subject">{{ cell.subject }}</span>
+                                        {% if cell.teacher %}
+                                            <span class="schedule-teacher">{{ cell.teacher }}</span>
+                                        {% endif %}
+                                        {% if cell.room %}
+                                            <span class="schedule-room">{{ cell.room }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">Libre</span>
+                                {% endif %}
+                            </td>
+                            {% endwith %}
+                        {% endfor %}
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="schedule-form-card">
+        <h5 class="mb-3">Asignar o actualizar horario</h5>
+        <form method="post" id="schedule-form" class="row g-3">
+            {% csrf_token %}
+            <input type="hidden" name="group" value="{{ selected_group }}">
+            <input type="hidden" name="day" id="selected-day">
+            <input type="hidden" name="slot" id="selected-slot">
+            <input type="hidden" name="action" id="form-action" value="save">
+
+            <div class="col-md-4">
+                <label class="form-label">Día</label>
+                <input type="text" class="form-control" id="display-day" disabled>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Horario</label>
+                <input type="text" class="form-control" id="display-slot" disabled>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label" for="subject-select">Materia</label>
+                <select name="materia" id="subject-select" class="form-select">
+                    <option value="">-- Seleccione materia --</option>
+                    {% for materia in subjects %}
+                    <option value="{{ materia.id }}">{{ materia.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label" for="teacher-select">Profesor</label>
+                <select name="profesor" id="teacher-select" class="form-select">
+                    <option value="">-- Seleccione profesor --</option>
+                    {% for profesor in teachers %}
+                    <option value="{{ profesor.id }}">{{ profesor.display_name }}{% if profesor.especialidad %} ({{ profesor.especialidad }}){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label" for="room-input">Aula</label>
+                <input type="text" name="salon" id="room-input" class="form-control" placeholder="Ej. Aula 10">
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end gap-2">
+
+            <button
+                type="submit"
+                class="btn btn-primary flex-fill py-2"
+                onclick="document.getElementById('form-action').value='save'"
+                style="height: 48px;"
+            >
+                Guardar
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-outline-danger flex-fill py-2"
+                id="clear-button"
+                style="height: 48px;"
+            >
+                Limpiar celda
+            </button>
+
+            </div>
+
+            <div class="col-12">
+                <div class="text-muted">Haz clic en una celda para cargar una sesión existente o seleccionar un horario libre.</div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    const scheduleCells = document.querySelectorAll('.schedule-cell');
+    const displayDay = document.getElementById('display-day');
+    const displaySlot = document.getElementById('display-slot');
+    const selectedDay = document.getElementById('selected-day');
+    const selectedSlot = document.getElementById('selected-slot');
+    const subjectSelect = document.getElementById('subject-select');
+    const teacherSelect = document.getElementById('teacher-select');
+    const roomInput = document.getElementById('room-input');
+    const clearButton = document.getElementById('clear-button');
+    const formAction = document.getElementById('form-action');
+
+    function resetSelection() {
+        displayDay.value = '';
+        displaySlot.value = '';
+        selectedDay.value = '';
+        selectedSlot.value = '';
+        subjectSelect.value = '';
+        teacherSelect.value = '';
+        roomInput.value = '';
+        formAction.value = 'save';
+        scheduleCells.forEach(cell => cell.classList.remove('table-active'));
+    }
+
+    scheduleCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            const day = cell.dataset.day;
+            const slot = cell.dataset.slot;
+            const subjectId = cell.dataset.subjectId || '';
+            const teacherId = cell.dataset.teacherId || '';
+
+            selectedDay.value = day;
+            selectedSlot.value = slot;
+            displayDay.value = day.charAt(0).toUpperCase() + day.slice(1);
+            displaySlot.value = slot;
+            subjectSelect.value = subjectId;
+            teacherSelect.value = teacherId;
+            roomInput.value = cell.dataset.room || '';
+            formAction.value = 'save';
+
+            scheduleCells.forEach(item => item.classList.remove('table-active'));
+            cell.classList.add('table-active');
+        });
+    });
+
+    clearButton.addEventListener('click', () => {
+        if (!selectedDay.value || !selectedSlot.value) {
+            alert('Seleccione primero una celda para limpiar.');
+            return;
+        }
+
+        formAction.value = 'clear';
+        document.getElementById('schedule-form').submit();
+    });
+
+    if (scheduleCells.length > 0) {
+        scheduleCells[0].click();
+    }
+</script>
+{% endblock %}
